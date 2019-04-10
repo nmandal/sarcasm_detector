@@ -7,14 +7,46 @@ from sklearn import preprocessing
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
 
 
-## Settings
-RANDOM_SEED = 1
+
+from sklearn.pipeline import Pipeline
+from sklearn.linear_model import LogisticRegression
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.model_selection import GridSearchCV
 
 
 ## Data Preparation
 class FeatureEngineer():
     
     def __init__(self, data):
+        tfidf = TfidfVectorizer(strip_accents=None,
+                        lowercase=False,
+                        preprocessor=None)
+        
+        param_grid = [{'vect__ngram_range': [(1, 1)],
+               'vect__stop_words': [None],
+               'vect__tokenizer': [None],
+               'clf__penalty': ['l1', 'l2'],
+               'clf__C': [1.0, 10.0, 100.0]},
+              {'vect__ngram_range': [(1, 1)],
+               'vect__stop_words': [None],
+               'vect__tokenizer': [None],
+               'vect__use_idf':[False],
+               'vect__norm':[None],
+               'clf__penalty': ['l1', 'l2'],
+               'clf__C': [1.0, 10.0, 100.0]},
+              ]
+        
+        lr_tfidf = Pipeline([('vect', tfidf),
+                     ('clf', LogisticRegression(random_state=0))])
+        
+        gs_lr_tfidf = GridSearchCV(lr_tfidf, param_grid,
+                           scoring='accuracy',
+                           cv=5,
+                           verbose=1,
+                           n_jobs=-1)
+        
+        
+        """
        ## Count Vectors as features
         # create a count vectorizer object
         count_vect = CountVectorizer(analyzer='word', token_pattern=r'\w{1,}')
@@ -50,3 +82,4 @@ class FeatureEngineer():
         self.X_train_tfidf_ngram_chars =  tfidf_vect_ngram_chars.transform(data.X_train) 
         self.X_valid_tfidf_ngram_chars =  tfidf_vect_ngram_chars.transform(data.X_valid)
         self.X_test_tfidf_ngram_chars =  tfidf_vect_ngram_chars.transform(data.X_test)
+    """
